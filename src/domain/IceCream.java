@@ -12,7 +12,7 @@ public class IceCream {
     public IceCream(){}
 
     public IceCream(String flavor, String brand, Double price, Integer quantity) {
-        this.id = MessageFormat.format("#{0}@{1}", flavor, brand);
+        this.id = MessageFormat.format("#{0}-{1}", flavor.toLowerCase(), brand.toLowerCase()).replaceAll(" ","");
         this.flavor = flavor;
         this.brand = brand;
         this.price = price;
@@ -49,6 +49,14 @@ public class IceCream {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public void decreaseQuantity(Integer quantity){
+        this.quantity -= quantity;
+    }
+
+    public void increaseQuantity(Integer quantity){
+        this.quantity += quantity;
     }
 
     public String getId() {

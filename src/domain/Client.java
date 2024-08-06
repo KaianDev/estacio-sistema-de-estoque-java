@@ -47,4 +47,11 @@ public class Client {
     public void setIceCreamList(List<IceCream> iceCreamList) {
         this.iceCreamList = iceCreamList;
     }
+
+    public void totalIceCreamValue(){
+        var totalIceCreamValue = iceCreamList.stream().mapToDouble(x ->  x.getQuantity() * x.getPrice()).reduce(Double::sum);
+        if(totalIceCreamValue.isPresent()){
+            System.out.println("Valor total do cliente "+totalIceCreamValue.getAsDouble());
+        }
+    }
 }

@@ -4,6 +4,7 @@ import domain.IceCreamShop;
 import domain.Supplier;
 
 import java.text.MessageFormat;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class Main {
@@ -23,7 +24,10 @@ public class Main {
             System.out.println("2 - REGISTRAR FORNECEDOR");
             System.out.println("3 - REGISTRAR CLIENTE");
             System.out.println("4 - VER ESTOQUE");
-            System.out.println("5 - SAIR");
+            System.out.println("5 - LISTAR CLIENTES & COMPRAS");
+            System.out.println("6 - REGISTRAR VENDA");
+            System.out.println("7 - REGISTRAR COMPRA");
+            System.out.println("8 - SAIR");
             System.out.println("-----------------------------------------\n");
 
 
@@ -31,59 +35,165 @@ public class Main {
             int choice = scanner.nextInt();
 
             if(choice == 1){
-                System.out.println("👉 REGISTRAR SORVETE");
-                System.out.print("Informe o sabor: ");
-                String flavor = scanner.next();
-                System.out.print("Informe a marca: ");
-                String brand = scanner.next();
-                System.out.print("Informe o preço: (Ex: 10,0) ");
-                double price = scanner.nextDouble();
-                System.out.print("Informe a quantidade: ");
-                int quantity = scanner.nextInt();
-
-                IceCream iceCream = new IceCream(flavor, brand, price, quantity);
-                iceCreamShop.registerIceCream(iceCream);
+                registerIceCream(scanner, iceCreamShop);
             }
 
             if(choice == 2){
-                System.out.println("👉 REGISTRAR FORNECEDOR");
-                System.out.print("Informe o nome do Fornecedor: ");
-                String supplierName = scanner.next();
-
-                Supplier supplier = new Supplier(supplierName);
-                iceCreamShop.registerSupplier(supplier);
+                registerSupplier(scanner, iceCreamShop);
             }
 
             if(choice == 3){
-                System.out.println("👉 REGISTRAR CLIENTE");
-                System.out.print("Informe o nome do cliente: ");
-                String clientName = scanner.next();
-
-                System.out.println("O que o cliente comprou?");
-                iceCreamShop.listIceCream();
-
-                System.out.print("Informe o identificador: (Ex: #Sabor@Marca) ");
-                String iceCreamId = scanner.next();
-                IceCream iceCream = iceCreamShop.getIceCreamById(iceCreamId);
-
-                Client client = new Client(clientName);
-                client.addIceCreamToList(iceCream);
-
-
-                iceCreamShop.registerClient(client);
+                registerClient(scanner, iceCreamShop);
             }
 
             if(choice == 4){
-                iceCreamShop.listIceCream();
+                seeStock(iceCreamShop);
             }
 
             if(choice == 5){
-                System.out.println("Até logo 👋🏻");
-                break;
+                listClientAndShopping(iceCreamShop);
             }
+
+            if(choice == 6){
+                registerSales(scanner, iceCreamShop);
+            }
+
+            if(choice == 7) {
+                registerShopping(scanner, iceCreamShop);
+            }
+
+            if(choice == 8){
+                System.out.println("Até logo! 👋🏻");
+                break;
+
+            }
+
         }
 
-
         scanner.close();
+    }
+    public static void registerIceCream(Scanner scanner, IceCreamShop iceCreamShop){
+        scanner.nextLine();
+        System.out.println("👉 REGISTRAR SORVETE");
+        System.out.print("Informe o sabor: ");
+        String flavor = scanner.nextLine();
+        System.out.print("Informe a marca: ");
+        String brand = scanner.nextLine();
+        System.out.print("Informe o preço: (Ex: 10,0) ");
+        double price = scanner.nextDouble();
+        System.out.print("Informe a quantidade: ");
+        int quantity = scanner.nextInt();
+
+        IceCream iceCream = new IceCream(flavor, brand, price, quantity);
+        iceCreamShop.registerIceCream(iceCream);
+    }
+
+    public static void registerSupplier(Scanner scanner, IceCreamShop iceCreamShop){
+        scanner.nextLine();
+        System.out.println("👉 REGISTRAR FORNECEDOR");
+        System.out.print("Informe o nome do Fornecedor: ");
+        String supplierName = scanner.nextLine();
+
+        Supplier supplier = new Supplier(supplierName);
+        iceCreamShop.registerSupplier(supplier);
+    }
+
+    public static void registerClient(Scanner scanner, IceCreamShop iceCreamShop){
+        scanner.nextLine();
+        System.out.println("👉 REGISTRAR CLIENTE");
+        System.out.print("Informe o nome do cliente: ");
+        String clientName = scanner.nextLine();
+
+        Client client = new Client(clientName);
+        iceCreamShop.registerClient(client);
+    }
+
+    public static void seeStock(IceCreamShop iceCreamShop){
+        System.out.println("👉 VER ESTOQUE");
+        iceCreamShop.listIceCream();
+    }
+
+    public static void listClientAndShopping(IceCreamShop iceCreamShop){
+        System.out.println("👉 LISTAR CLIENTES & COMPRAS");
+        iceCreamShop.listClients();
+    }
+
+    public static void registerSales(Scanner scanner, IceCreamShop iceCreamShop){
+        scanner.nextLine();
+        System.out.println("👉 REGISTRAR VENDAS");
+        System.out.print("Informe o nome do cliente: ");
+        String clientName = scanner.nextLine();
+        Optional<Client> client = iceCreamShop.getClientByName(clientName);
+        if(client.isPresent()){
+            while (true){
+                iceCreamShop.listIceCream();
+                System.out.print("Informe o id: ");
+                String iceCreamId = scanner.next();
+                Optional<IceCream> iceCream = iceCreamShop.getIceCreamById(iceCreamId);
+
+                if(iceCream.isPresent()){
+                    var iceCreamItemFromStock = iceCream.get();
+                    System.out.print("Informe a quantidade: ");
+                    int quantity = scanner.nextInt();
+
+                    if(iceCreamItemFromStock.getQuantity() >= quantity){
+                        IceCream newIceCreamClientItem = new IceCream(
+                                iceCreamItemFromStock.getFlavor(),
+                                iceCreamItemFromStock.getBrand(),
+                                iceCreamItemFromStock.getPrice(),
+                                quantity
+                        );
+                        iceCreamItemFromStock.decreaseQuantity(quantity);
+                        client.get().addIceCreamToList(newIceCreamClientItem);
+                    } else {
+                        System.out.println("❌ Quantidade insuficiente no estoque.");
+                    }
+                }
+                System.out.print("Deseja registrar mais vendar para esse cliente? [S/N] ");
+                String option = scanner.next();
+
+                if(option.equalsIgnoreCase("n")){
+                    break;
+                }
+
+            }
+        }
+    }
+
+    public static void registerShopping(Scanner scanner, IceCreamShop iceCreamShop){
+        scanner.nextLine();
+        System.out.println("👉 REGISTRAR COMPRAS");
+        iceCreamShop.listSuppliers();
+        var supplierList = iceCreamShop.getSupplierList();
+        if(!supplierList.isEmpty()){
+            System.out.print("Informe o nome do fornecedor: ");
+            String supplierName = scanner.nextLine();
+            Optional<Supplier> supplier = iceCreamShop.getSupplierByName(supplierName);
+            if(supplier.isPresent()){
+                while (true){
+                    System.out.print("O que deseja abastecer: ");
+                    iceCreamShop.listIceCream();
+
+                    System.out.print("Informe o ID do sorvete: ");
+                    String iceCreamId = scanner.next();
+
+                    Optional<IceCream> iceCream = iceCreamShop.getIceCreamById(iceCreamId);
+
+                    if(iceCream.isPresent()){
+                        System.out.print("Digite a quantidade que deseja abastecer: ");
+                        int quantity = scanner.nextInt();
+
+                        iceCream.get().increaseQuantity(quantity);
+                    }
+
+                    System.out.print("Deseja abastecer mais? [S/N] ");
+                    String option = scanner.next();
+
+                    if(option.equalsIgnoreCase("n")){
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
